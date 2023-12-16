@@ -1,15 +1,2 @@
-# Mac/OSX
-.DS_Store
-
-__pycache__/
-*.py[cod]
-*$py.class
-.Python
-
-.vscode
-
-nohup.out
-
-# Jupyter Notebook
-.ipynb_checkpoints
+/.idea
 

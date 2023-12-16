@@ -543,8 +543,8 @@ def parallel_uct_search(
         RuntimeError:
             if the game is over.
     """
-    if not isinstance(env, BoardGameEnv):
-        raise ValueError(f'Expect `env` to be a valid BoardGameEnv instance, got {env}')
+    # if not isinstance(env, BoardGameEnv):
+    #     raise ValueError(f'Expect `env` to be a valid BoardGameEnv instance, got {env}')
     if not 1 <= num_simulations:
         raise ValueError(f'Expect `num_simulations` to a positive integer, got {num_simulations}')
     if env.is_game_over():
