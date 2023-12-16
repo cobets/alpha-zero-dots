@@ -28,7 +28,7 @@ import torch
 from torch.optim.lr_scheduler import MultiStepLR
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('board_size', 13, 'Board size for freestyle Gomoku.')
+flags.DEFINE_integer('board_size', 8, 'Board size for freestyle Gomoku.')
 flags.DEFINE_integer(
     'num_stack',
     8,
@@ -131,16 +131,16 @@ flags.DEFINE_float(
 )
 flags.DEFINE_integer('ckpt_interval', 1000, 'The frequency (in training step) to create new checkpoint.')
 flags.DEFINE_integer('log_interval', 200, 'The frequency (in training step) to log training statistics.')
-flags.DEFINE_string('ckpt_dir', './checkpoints/gomoku/13x13', 'Path for checkpoint file.')
+flags.DEFINE_string('ckpt_dir', './checkpoints/dots/8x8', 'Path for checkpoint file.')
 flags.DEFINE_string(
     'logs_dir',
-    './logs/gomoku/13x13',
+    './logs/dots/8x8',
     'Path to save statistics for self-play, training, and evaluation.',
 )
 flags.DEFINE_string('eval_games_dir', '', 'Path contains evaluation games in sgf format.')
 flags.DEFINE_string(
     'save_sgf_dir',
-    './selfplay_games/gomoku/13x13',
+    './selfplay_games/dots/8x8',
     'Path to save selfplay games in sgf format.',
 )
 flags.DEFINE_integer('save_sgf_interval', 500, 'How often to save self-play games.')
