@@ -140,7 +140,7 @@ flags.DEFINE_string(
 flags.DEFINE_string('eval_games_dir', '', 'Path contains evaluation games in sgf format.')
 flags.DEFINE_string(
     'save_sgf_dir',
-    './selfplay_games/dots/8x8',
+    None,
     'Path to save selfplay games in sgf format.',
 )
 flags.DEFINE_integer('save_sgf_interval', 500, 'How often to save self-play games.')

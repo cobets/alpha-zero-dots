@@ -13,9 +13,12 @@ class DotsGameEnv:
         self.legal_actions = (self.env.board == 0).flatten().astype(int)
         self.to_play = 1
         self.opponent_player = -1
+        self.black_player = 1
+        self.white_player = -1
         self.steps = 0
         self.last_move = None
         self.last_player = None
+        self.winner = None
 
     def step(self, action: int) -> Tuple[np.ndarray, float, bool, dict]:
         if self.env.terminal():
@@ -30,11 +33,16 @@ class DotsGameEnv:
         self.steps += 1
         reward = 0.0
         observation, step_reward, done = self.env.step(action)
-        self.legal_actions = (self.env.board == 0).flatten().astype(int)
+
+        if done:
+            if self.env.terminal_reward() * self.to_play > 0:
+                reward = 1.0
+                self.winner = self.to_play
+
         self.to_play = 1 if self.env.player == BLACK else -1
         self.opponent_player = 1 if self.env.opponent == BLACK else -1
-        if done:
-            reward = float(self.env.terminal_reward())
+
+        self.legal_actions = (self.env.board == 0).flatten().astype(int)
 
         return observation, reward, done, {}
 
@@ -46,6 +54,8 @@ class DotsGameEnv:
         self.steps = 0
         self.last_move = None
         self.last_player = None
+        self.winner = None
+        return self.env.observation()
 
     def is_game_over(self):
         return self.env.terminal()
