@@ -19,6 +19,7 @@ import random
 import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
 
 torch.autograd.set_detect_anomaly(True)
 
@@ -418,6 +419,7 @@ def run_learner_loop(  # noqa: C901
     var_resign_threshold: mp.Value,
     ckpt_event: mp.Event,
     stop_event: mp.Event,
+    tensorboard_writer: SummaryWriter,
     lock=threading.Lock(),
 ) -> None:
     """Update the neural network, dynamically adjust resignation threshold if required."""
@@ -480,6 +482,8 @@ def run_learner_loop(  # noqa: C901
 
     network.train()
 
+    global_step = 0
+
     while True:
         try:
             item = data_queue.get()
@@ -492,6 +496,7 @@ def run_learner_loop(  # noqa: C901
             if stats['training_steps'] != training_steps:
                 continue
 
+            global_step += 1
             last_ckpt_games += 1
             last_ckpt_samples += stats['game_length']
             replay.add_game(game_seq)
@@ -508,6 +513,10 @@ def run_learner_loop(  # noqa: C901
                     f'Average game length is {avg_game_length}. '
                     f'Average time per game (over {num_actors} actors) is {avg_time_per_game}'
                 )
+
+            if global_step % 500 == 0:
+                tensorboard_writer.add_scalar(f'Replay/num_games_added', replay.num_games_added, global_step)
+                tensorboard_writer.add_scalar(f'Replay/num_samples_added', replay.num_samples_added, global_step)
 
             # Save replay buffer state periodically to avoid starting from zero.
             if save_replay_interval > 0 and replay.num_games_added % save_replay_interval == 0:
@@ -592,6 +601,12 @@ def run_learner_loop(  # noqa: C901
                             'total_samples': replay.num_samples_added,
                         }
                         writer.write(OrderedDict((n, v) for n, v in stats.items()))
+
+                        tensorboard_writer.add_scalar(f'Train/policy_loss', stats['policy_loss'], training_steps)
+                        tensorboard_writer.add_scalar(f'Train/value_loss', stats['value_loss'], training_steps)
+                        tensorboard_writer.add_scalar(f'Train/learning_rate', stats['learning_rate'], training_steps)
+                        tensorboard_writer.add_scalar(f'Train/total_games', stats['total_games'], training_steps)
+                        tensorboard_writer.add_scalar(f'Train/total_samples', stats['total_samples'], training_steps)
 
                 # Create checkpoint
                 ckpt_file = os.path.join(ckpt_dir, f'training_steps_{training_steps}.ckpt')
@@ -693,6 +708,7 @@ def run_evaluator_loop(
     log_level: str,
     var_ckpt: mp.Value,
     stop_event: mp.Event,
+    tensorboard_writer: SummaryWriter
 ) -> None:
     """Evaluate the latest neural network by paying against network from last checkpoint.
     Also compute the prediction accuracy on human games if applicable.
@@ -756,6 +772,8 @@ def run_evaluator_loop(
         deterministic=True,
     )
 
+    total_reward = 0
+
     while not stop_event.is_set():
         ckpt_file = _decode_bytes(var_ckpt.value)
         if ckpt_file == '' or ckpt_file == last_ckpt or not os.path.exists(ckpt_file):
@@ -789,6 +807,19 @@ def run_evaluator_loop(
         }
 
         writer.write(OrderedDict((n, v) for n, v in stats.items()))
+
+        match stats['game_terminal_reward']:
+            case 1:
+                total_reward += 1
+            case 0:
+                if total_reward > 0:
+                    total_reward -= 1
+            case -1:
+                total_reward -= 1
+
+        tensorboard_writer.add_scalar(f'Eval/reward', total_reward, training_steps)
+        tensorboard_writer.add_scalar(f'Eval/black_elo_rating', stats['black_elo_rating'], training_steps)
+        tensorboard_writer.add_scalar(f'Eval/white_elo_rating', stats['white_elo_rating'], training_steps)
 
         # Save the game in sgf format
         if save_sgf_dir is not None and os.path.isdir(save_sgf_dir) and os.path.exists(save_sgf_dir):
@@ -847,6 +878,7 @@ def eval_against_prev_ckpt(
     stats = {
         'game_length': env.steps,
         'game_result': env.get_result_string(),
+        'game_terminal_reward': env.terminal_reward()
     }
 
     if env.has_pass_move:

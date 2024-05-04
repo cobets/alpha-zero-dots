@@ -19,6 +19,7 @@ class DotsGameEnv:
         self.last_move = None
         self.last_player = None
         self.winner = None
+        self.last_step_reward = None
 
     def step(self, action: int) -> Tuple[np.ndarray, float, bool, dict]:
         if self.env.terminal():
@@ -32,7 +33,7 @@ class DotsGameEnv:
 
         self.steps += 1
         reward = 0.0
-        observation, step_reward, done = self.env.step(action)
+        observation, self.last_step_reward, done = self.env.step(action)
 
         if done:
             if self.env.terminal_reward() * self.to_play > 0:
@@ -55,6 +56,7 @@ class DotsGameEnv:
         self.last_move = None
         self.last_player = None
         self.winner = None
+        self.last_step_reward = None
         return self.env.observation()
 
     def is_game_over(self):
@@ -73,3 +75,34 @@ class DotsGameEnv:
             return 'W+1.0'
         else:
             return 'DRAW'
+
+    def terminal_reward(self):
+        return self.env.terminal_reward()
+
+    def render(self, mode='terminal'):
+        pass
+
+    def close(self):
+        pass
+
+    def play(self, action):
+        self.step(action)
+
+    def legal_action_values(self):
+        return self.env.legal_actions()
+
+    @property
+    def board(self):
+        return self.env.board
+
+    @property
+    def width(self):
+        return self.env.width
+
+    @property
+    def height(self):
+        return self.env.height
+
+    @property
+    def last_catch_area_size(self):
+        return self.env.last_catch_area_size

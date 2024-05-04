@@ -25,22 +25,15 @@ from absl import flags
 
 import numpy as np
 import torch
+from torch.utils.tensorboard import SummaryWriter
 from torch.optim.lr_scheduler import MultiStepLR
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('board_size', 8, 'Board size for freestyle Gomoku.')
-flags.DEFINE_integer(
-    'num_stack',
-    8,
-    'Stack N previous states, the state is an image of N x 2 + 1 binary planes.',
-)
+flags.DEFINE_integer('board_size', 8, 'Board size for Dots game.')
+flags.DEFINE_integer('num_stack', 8, 'Stack N previous states, the state is an image of N x 2 + 1 binary planes.')
 flags.DEFINE_integer('num_res_blocks', 10, 'Number of residual blocks in the neural network.')
-flags.DEFINE_integer('num_filters', 40, 'Number of filters for the conv2d layers in the neural network.')
-flags.DEFINE_integer(
-    'num_fc_units',
-    80,
-    'Number of hidden units in the linear layer of the neural network.',
-)
+flags.DEFINE_integer('num_filters', 128, 'Number of filters for the conv2d layers in the neural network.')
+flags.DEFINE_integer('num_fc_units', 128, 'Number of hidden units in the linear layer of the neural network.')
 
 flags.DEFINE_integer('min_games', 5000, 'Collect number of self-play games before learning starts.')
 flags.DEFINE_integer(
@@ -50,14 +43,14 @@ flags.DEFINE_integer(
 )
 flags.DEFINE_integer(
     'replay_capacity',
-    150000 * 10,
+    150000 * 64,
     'Replay buffer capacity is number of game * average game length. '
     'Note for Gomoku, the game often ends around 9-15 steps.',
 )
 
 flags.DEFINE_integer(
     'batch_size',
-    256,
+    512,
     'To avoid overfitting, we want to make sure the agent only sees ~10% of samples in the replay over one checkpoint.'
     'That is, batch_size * ckpt_interval <= replay_capacity * 0.1',
 )
@@ -137,6 +130,11 @@ flags.DEFINE_string(
     './logs/dots/8x8',
     'Path to save statistics for self-play, training, and evaluation.',
 )
+flags.DEFINE_string(
+    'tensorboard_dir',
+    './tensorboard/dots/8x8',
+    'Path to tensorboard data'
+)
 flags.DEFINE_string('eval_games_dir', '', 'Path contains evaluation games in sgf format.')
 flags.DEFINE_string(
     'save_sgf_dir',
@@ -147,7 +145,7 @@ flags.DEFINE_integer('save_sgf_interval', 500, 'How often to save self-play game
 
 flags.DEFINE_integer(
     'save_replay_interval',
-    50000,
+    10000,
     'The frequency (in number of self-play games) to save the replay buffer state.'
     'So we can resume training without staring from zero. 0 means do not save replay state.'
     'If you set this to a non-zero value, you should make sure the path specified by "FLAGS.ckpt_dir" have at least 100GB of free space.',
@@ -188,9 +186,11 @@ def main():
 
     maybe_create_dir(FLAGS.ckpt_dir)
     maybe_create_dir(FLAGS.logs_dir)
+    maybe_create_dir(FLAGS.tensorboard_dir)
     maybe_create_dir(FLAGS.save_sgf_dir)
 
     logger = create_logger(FLAGS.log_level)
+    tensorboard_writer = SummaryWriter(FLAGS.tensorboard_dir)
 
     logger.info(extract_args_from_flags_dict(FLAGS.flag_values_dict()))
 
@@ -274,6 +274,7 @@ def main():
                 FLAGS.log_level,
                 var_ckpt,
                 stop_event,
+                tensorboard_writer
             ),
         )
 
@@ -344,6 +345,7 @@ def main():
             var_resign_threshold=var_resign_threshold,
             ckpt_event=ckpt_event,
             stop_event=stop_event,
+            tensorboard_writer=tensorboard_writer
         )
 
         # Wait for all actors to finish
@@ -352,6 +354,7 @@ def main():
             actor.close()
 
         evaluator.join()
+        tensorboard_writer.close()
 
 
 if __name__ == '__main__':
