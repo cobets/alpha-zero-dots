@@ -190,7 +190,6 @@ def main():
     maybe_create_dir(FLAGS.save_sgf_dir)
 
     logger = create_logger(FLAGS.log_level)
-    tensorboard_writer = SummaryWriter(FLAGS.tensorboard_dir)
 
     logger.info(extract_args_from_flags_dict(FLAGS.flag_values_dict()))
 
@@ -274,7 +273,7 @@ def main():
                 FLAGS.log_level,
                 var_ckpt,
                 stop_event,
-                tensorboard_writer
+                FLAGS.tensorboard_dir
             ),
         )
 
@@ -345,7 +344,7 @@ def main():
             var_resign_threshold=var_resign_threshold,
             ckpt_event=ckpt_event,
             stop_event=stop_event,
-            tensorboard_writer=tensorboard_writer
+            tensorboard_dir=FLAGS.tensorboard_dir
         )
 
         # Wait for all actors to finish
@@ -354,7 +353,6 @@ def main():
             actor.close()
 
         evaluator.join()
-        tensorboard_writer.close()
 
 
 if __name__ == '__main__':

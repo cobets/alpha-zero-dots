@@ -419,7 +419,7 @@ def run_learner_loop(  # noqa: C901
     var_resign_threshold: mp.Value,
     ckpt_event: mp.Event,
     stop_event: mp.Event,
-    tensorboard_writer: SummaryWriter,
+    tensorboard_dir: str,
     lock=threading.Lock(),
 ) -> None:
     """Update the neural network, dynamically adjust resignation threshold if required."""
@@ -483,7 +483,7 @@ def run_learner_loop(  # noqa: C901
     network.train()
 
     global_step = 0
-
+    tensorboard_writer = SummaryWriter(tensorboard_dir)
     while True:
         try:
             item = data_queue.get()
@@ -708,7 +708,7 @@ def run_evaluator_loop(
     log_level: str,
     var_ckpt: mp.Value,
     stop_event: mp.Event,
-    tensorboard_writer: SummaryWriter
+    tensorboard_dir: str
 ) -> None:
     """Evaluate the latest neural network by paying against network from last checkpoint.
     Also compute the prediction accuracy on human games if applicable.
@@ -773,7 +773,7 @@ def run_evaluator_loop(
     )
 
     total_reward = 0
-
+    tensorboard_writer = SummaryWriter(tensorboard_dir)
     while not stop_event.is_set():
         ckpt_file = _decode_bytes(var_ckpt.value)
         if ckpt_file == '' or ckpt_file == last_ckpt or not os.path.exists(ckpt_file):
