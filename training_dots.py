@@ -31,8 +31,8 @@ FLAGS = flags.FLAGS
 flags.DEFINE_integer('board_size', 8, 'Board size for Dots game.')
 flags.DEFINE_integer('num_stack', 8, 'Stack N previous states, the state is an image of N x 2 + 1 binary planes.')
 flags.DEFINE_integer('num_res_blocks', 10, 'Number of residual blocks in the neural network.')
-flags.DEFINE_integer('num_filters', 128, 'Number of filters for the conv2d layers in the neural network.')
-flags.DEFINE_integer('num_fc_units', 128, 'Number of hidden units in the linear layer of the neural network.')
+flags.DEFINE_integer('num_filters', 40, 'Number of filters for the conv2d layers in the neural network.')
+flags.DEFINE_integer('num_fc_units', 80, 'Number of hidden units in the linear layer of the neural network.')
 
 flags.DEFINE_integer('min_games', 5000, 'Collect number of self-play games before learning starts.')
 flags.DEFINE_integer(
@@ -58,7 +58,7 @@ flags.DEFINE_float('init_lr', 0.01, 'Initial learning rate.')
 flags.DEFINE_float('lr_decay', 0.1, 'Learning rate decay rate.')
 flags.DEFINE_multi_integer(
     'lr_milestones',
-    [100000, 200000],
+    [10000, 20000],
     'The number of training steps at which the learning rate will be decayed.',
 )
 flags.DEFINE_float('sgd_momentum', 0.9, '')
