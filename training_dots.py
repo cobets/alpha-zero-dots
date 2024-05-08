@@ -58,7 +58,7 @@ flags.DEFINE_float('init_lr', 0.01, 'Initial learning rate.')
 flags.DEFINE_float('lr_decay', 0.1, 'Learning rate decay rate.')
 flags.DEFINE_multi_integer(
     'lr_milestones',
-    [10000, 20000],
+    [10000, 25000],
     'The number of training steps at which the learning rate will be decayed.',
 )
 flags.DEFINE_float('sgd_momentum', 0.9, '')
