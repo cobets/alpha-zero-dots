@@ -49,7 +49,7 @@ flags.DEFINE_integer(
 
 flags.DEFINE_integer(
     'batch_size',
-    512,
+    256,
     'To avoid overfitting, we want to make sure the agent only sees ~10% of samples in the replay over one checkpoint.'
     'That is, batch_size * ckpt_interval <= replay_capacity * 0.1',
 )
@@ -58,7 +58,7 @@ flags.DEFINE_float('init_lr', 0.01, 'Initial learning rate.')
 flags.DEFINE_float('lr_decay', 0.1, 'Learning rate decay rate.')
 flags.DEFINE_multi_integer(
     'lr_milestones',
-    [10000, 25000],
+    [11500, 25000],
     'The number of training steps at which the learning rate will be decayed.',
 )
 flags.DEFINE_float('sgd_momentum', 0.9, '')
@@ -123,7 +123,7 @@ flags.DEFINE_float(
 )
 flags.DEFINE_integer('ckpt_interval', 1000, 'The frequency (in training step) to create new checkpoint.')
 flags.DEFINE_integer('log_interval', 200, 'The frequency (in training step) to log training statistics.')
-flags.DEFINE_string('ckpt_dir', './checkpoints/dots/8x8', 'Path for checkpoint file.')
+flags.DEFINE_string('ckpt_dir', './cp/dots/8x8', 'Path for checkpoint file.')
 flags.DEFINE_string(
     'logs_dir',
     './logs/dots/8x8',

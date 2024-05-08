@@ -36,6 +36,6 @@ if __name__ == '__main__':
         'num_parallel': NUM_PARALLEL
     }
 
-    network_file_name = f'l{INPUT_LEVELS}w{WIDTH}h{HEIGHT}-f{NUM_FILTERS}-rb{NUM_RES_BLOCK}-fcu{NUM_FC_UNITS}-g{GOMOKU}-s{training_steps}.tar'
+    network_file_name = f'l{INPUT_LEVELS}w{WIDTH}h{HEIGHT}-f{NUM_FILTERS}-rb{NUM_RES_BLOCK}-fcu{NUM_FC_UNITS}-g{GOMOKU}-s{training_steps}.ckpt'
 
     torch.save(loaded_state, f'./checkpoints/dots/8x8/{network_file_name}')
