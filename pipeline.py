@@ -420,6 +420,10 @@ def run_learner_loop(  # noqa: C901
     ckpt_event: mp.Event,
     stop_event: mp.Event,
     tensorboard_dir: str,
+    c_puct_base: float,
+    c_puct_init: float,
+    num_simulations: int,
+    num_parallel: int,
     lock=threading.Lock(),
 ) -> None:
     """Update the neural network, dynamically adjust resignation threshold if required."""
@@ -616,6 +620,20 @@ def run_learner_loop(  # noqa: C901
                         'optimizer': optimizer.state_dict(),
                         'lr_scheduler': lr_scheduler.state_dict(),
                         'training_steps': training_steps,
+                        'network_config': {
+                            'input_shape': network.input_shape,
+                            'num_actions': network.num_actions,
+                            'num_res_block': network.num_res_block,
+                            'num_filters': network.num_filters,
+                            'num_fc_units': network.num_fc_units,
+                            'gomoku': network.gomoku
+                        },
+                        'mcts_config': {
+                            'c_puct_base': c_puct_base,
+                            'c_puct_init': c_puct_init,
+                            'num_simulations': num_simulations,
+                            'num_parallel': num_parallel
+                        }
                     },
                     ckpt_file,
                 )

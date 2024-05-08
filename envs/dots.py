@@ -4,10 +4,10 @@ import numpy as np
 
 
 class DotsGameEnv:
-    def __init__(self) -> None:
+    def __init__(self, width=8, height=8, collect_caught_paths=False) -> None:
         self.has_resign_move = False
         self.has_pass_move = False
-        self.env = DotsEnv(8, 8)
+        self.env = DotsEnv(width, height, collect_caught_paths)
         self.num_actions = self.env.action_length()
         self.action_dim = self.num_actions
         self.legal_actions = (self.env.board == 0).flatten().astype(int)
@@ -48,7 +48,7 @@ class DotsGameEnv:
         return observation, reward, done, {}
 
     def reset(self):
-        self.env = DotsEnv(8, 8)
+        self.env = DotsEnv(self.env.width, self.env.height, self.env.collect_caught_paths)
         self.legal_actions = (self.env.board == 0).flatten().astype(int)
         self.to_play = 1
         self.opponent_player = -1
@@ -106,3 +106,12 @@ class DotsGameEnv:
     @property
     def last_catch_area_size(self):
         return self.env.last_catch_area_size
+
+    @property
+    def caught_paths_black(self):
+        return self.env.caught_paths_black
+
+    @property
+    def caught_paths_red(self):
+        return self.env.caught_paths_red
+

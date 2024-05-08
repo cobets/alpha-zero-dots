@@ -18,7 +18,7 @@ os.environ['OMP_NUM_THREADS'] = '1'
 # numpy is imported).
 os.environ['MKL_NUM_THREADS'] = '1'
 
-
+import time
 import multiprocessing as mp
 import sys
 from absl import flags
@@ -167,6 +167,11 @@ flags.DEFINE_string(
     'Path to save statistics for self-play, training, and evaluation.',
 )
 flags.DEFINE_string(
+    'tensorboard_dir',
+    './tensorboard/go/9x9',
+    'Path to tensorboard data'
+)
+flags.DEFINE_string(
     'eval_games_dir',
     './pro_games/go/9x9',
     'Path contains evaluation games in sgf format.',
@@ -224,6 +229,9 @@ def main():
     maybe_create_dir(FLAGS.ckpt_dir)
     maybe_create_dir(FLAGS.logs_dir)
     maybe_create_dir(FLAGS.save_sgf_dir)
+
+    l_tensorboard_dir = os.path.join(FLAGS.tensorboard_dir, time.strftime("%Y-%m-%d--%H-%M-%S"))
+    maybe_create_dir(l_tensorboard_dir)
 
     logger = create_logger(FLAGS.log_level)
 
@@ -308,6 +316,7 @@ def main():
                 FLAGS.log_level,
                 var_ckpt,
                 stop_event,
+                l_tensorboard_dir
             ),
         )
 
@@ -378,6 +387,11 @@ def main():
             var_resign_threshold=var_resign_threshold,
             ckpt_event=ckpt_event,
             stop_event=stop_event,
+            tensorboard_dir=l_tensorboard_dir,
+            c_puct_base=FLAGS.c_puct_base,
+            c_puct_init=FLAGS.c_puct_init,
+            num_simulations=FLAGS.num_simulations,
+            num_parallel=FLAGS.num_parallel
         )
 
         # Wait for all actors to finish

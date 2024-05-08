@@ -95,6 +95,14 @@ class AlphaZeroNet(nn.Module):
         gomoku: bool = False,
     ) -> None:
         super().__init__()
+
+        self.input_shape = input_shape
+        self.num_actions = num_actions
+        self.num_res_block = num_res_block
+        self.num_filters = num_filters
+        self.num_fc_units = num_fc_units
+        self.gomoku = gomoku
+
         c, h, w = input_shape
 
         # We need to use additional padding for Gomoku to fix agent shortsighted on edge cases
