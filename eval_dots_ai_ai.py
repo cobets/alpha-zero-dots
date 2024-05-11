@@ -3,26 +3,24 @@
 # This project is released under the MIT License.
 # See the accompanying LICENSE file for details.
 
-
-"""Evaluate the AlphaZero agent on Dots."""
-from absl import flags
+"""Evaluate the AlphaZero two agents on Dots."""
 import sys
 import torch
-
+from network import AlphaZeroNet
+from pipeline import create_mcts_player, set_seed, disable_auto_grad
 from envs.dots import DotsGameEnv
-from dots_pygame import main as pygame
+from absl import flags
 
 FLAGS = flags.FLAGS
-# flags.DEFINE_string('white_ckpt', './checkpoints/dots/8x8/l3w8h8-f40-rb10-fcu80-gTrue-s11000.tar', 'Best model so far.')
-# flags.DEFINE_string('white_ckpt', './checkpoints/dots/8x8/i3.8.8-f40-rb10-fcu80-gTrue-s35000.ckpt', 'Load the checkpoint file for white player.')
-flags.DEFINE_string('white_ckpt', './checkpoints/dots/8x8/i3.8.8-f40-rb10-fcu80-gTrue-s64000.ckpt', 'Load the checkpoint file for white player.')
+
+# flags.DEFINE_string('black_ckpt', './checkpoints/dots/8x8/l3w8h8-f40-rb10-fcu80-gTrue-s11000.tar', 'Black Player')
+flags.DEFINE_string('black_ckpt', './checkpoints/dots/8x8/i3.8.8-f40-rb10-fcu80-gTrue-s26000.ckpt', 'Black Player')
+flags.DEFINE_string('red_ckpt', './checkpoints/dots/8x8/i3.8.8-f40-rb10-fcu80-gTrue-s64000.ckpt', 'Red Player')
 flags.DEFINE_integer('seed', 1, 'Seed the runtime.')
+flags.DEFINE_integer('games', 2, 'Games to play.')
 
 # Initialize flags
 FLAGS(sys.argv)
-
-from network import AlphaZeroNet
-from pipeline import create_mcts_player, set_seed, disable_auto_grad
 
 
 def main():
@@ -42,7 +40,7 @@ def main():
         c_puct_base = mcts_config['c_puct_base']
         c_puct_init = mcts_config['c_puct_init']
         num_simulations = mcts_config['num_simulations']
-        # num_simulations = 500
+
         num_parallel = mcts_config['num_parallel']
 
         network = AlphaZeroNet(
@@ -69,16 +67,39 @@ def main():
             deterministic=True,
         ), width, height, c_puct_base, c_puct_init
 
-    white_player, width, height, c_puct_base, c_puct_init = mcts_player_builder(FLAGS.white_ckpt, runtime_device)
+    black_player, width, height, c_puct_base_black, c_puct_init_black = mcts_player_builder(FLAGS.black_ckpt, runtime_device)
+    red_player, width, height, c_puct_base_red, c_puct_init_red = mcts_player_builder(FLAGS.red_ckpt, runtime_device)
 
     # Start to play game
-    eval_env = DotsGameEnv(width, height, True)
+    black_reward = 0
+    red_reward = 0
+    for game in range(FLAGS.games):
+        eval_env = DotsGameEnv(width, height, False)
+        done = False
+        i = 0 if game % 2 == 0 else 1
 
-    def ai_play():
-        move, *_ = white_player(eval_env, None, c_puct_base, c_puct_init)
-        _, _, done, _ = eval_env.step(move)
+        while not done:
+            print ('.', end='')
+            if i % 2 == 0:
+                move, *_ = black_player(eval_env, None, c_puct_base_black, c_puct_init_black)
+            else:
+                move, *_ = red_player(eval_env, None, c_puct_base_red, c_puct_init_red)
+            _, _, done, _ = eval_env.step(move)
+            i += 1
 
-    pygame(eval_env, ai_play)
+        reward = eval_env.terminal_reward()
+        if game % 2 == 0:
+            if reward > 0:
+                black_reward += reward
+            else:
+                red_reward += -reward
+        else:
+            if reward > 0:
+                red_reward += reward
+            else:
+                black_reward += -reward
+
+        print(f'\nBlack vs Red {black_reward}:{red_reward}. Games {game + 1}')
 
 
 if __name__ == '__main__':

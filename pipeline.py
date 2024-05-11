@@ -809,15 +809,28 @@ def run_evaluator_loop(
         network.eval()
         last_ckpt = ckpt_file
 
+        # swap black and white players so prev model plays first
         selfplay_game_stats = eval_against_prev_ckpt(
             env,
-            black_player,
             white_player,
-            black_elo,
+            black_player,
             white_elo,
+            black_elo,
             c_puct_base,
             c_puct_init,
         )
+        # swap results too
+        if stats['game_result'].find('B+') > -1:
+            stats['game_result'] = 'W+1.0'
+        elif stats['game_result'].find('W+') > -1:
+            stats['game_result'] = 'B+1.0'
+
+        if stats['game_terminal_reward'] == 1:
+            stats['game_terminal_reward'] = -1
+        elif stats['game_terminal_reward'] == -1:
+            stats['game_terminal_reward'] = 1
+
+        stats['black_elo_rating'], stats['white_elo_rating'] = stats['white_elo_rating'], stats['black_elo_rating']
 
         pro_game_stats = eval_on_pro_games(network, device, dataloader)
 

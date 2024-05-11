@@ -80,7 +80,7 @@ flags.DEFINE_bool('compress_data', False, 'Compress state when saving in replay 
 flags.DEFINE_integer('num_actors', 32, 'Number of self-play actor processes.')
 flags.DEFINE_integer(
     'num_simulations',
-    380,
+    800,
     'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.',
 )
 flags.DEFINE_integer(
