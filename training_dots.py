@@ -31,10 +31,10 @@ FLAGS = flags.FLAGS
 flags.DEFINE_integer('board_size', 8, 'Board size for Dots game.')
 flags.DEFINE_integer('num_stack', 8, 'Stack N previous states, the state is an image of N x 2 + 1 binary planes.')
 flags.DEFINE_integer('num_res_blocks', 10, 'Number of residual blocks in the neural network.')
-flags.DEFINE_integer('num_filters', 40, 'Number of filters for the conv2d layers in the neural network.')
-flags.DEFINE_integer('num_fc_units', 80, 'Number of hidden units in the linear layer of the neural network.')
+flags.DEFINE_integer('num_filters', 80, 'Number of filters for the conv2d layers in the neural network.')
+flags.DEFINE_integer('num_fc_units', 120, 'Number of hidden units in the linear layer of the neural network.')
 
-flags.DEFINE_integer('min_games', 5000, 'Collect number of self-play games before learning starts.')
+flags.DEFINE_integer('min_games', 10000, 'Collect number of self-play games before learning starts.')
 flags.DEFINE_integer(
     'games_per_ckpt',
     5000,
@@ -42,14 +42,14 @@ flags.DEFINE_integer(
 )
 flags.DEFINE_integer(
     'replay_capacity',
-    150000 * 64,
+    250000 * 64,
     'Replay buffer capacity is number of game * average game length. '
     'Note for Gomoku, the game often ends around 9-15 steps.',
 )
 
 flags.DEFINE_integer(
     'batch_size',
-    256,
+    512,
     'To avoid overfitting, we want to make sure the agent only sees ~10% of samples in the replay over one checkpoint.'
     'That is, batch_size * ckpt_interval <= replay_capacity * 0.1',
 )
@@ -58,15 +58,15 @@ flags.DEFINE_float('init_lr', 0.01, 'Initial learning rate.')
 flags.DEFINE_float('lr_decay', 0.1, 'Learning rate decay rate.')
 flags.DEFINE_multi_integer(
     'lr_milestones',
-    [11500, 25000],
+    [100000, 200000],
     'The number of training steps at which the learning rate will be decayed.',
 )
-flags.DEFINE_float('sgd_momentum', 0.9, '')
 flags.DEFINE_float('l2_regularization', 1e-4, 'The L2 regularization parameter applied to weights.')
+flags.DEFINE_float('sgd_momentum', 0.9, '')
 
 flags.DEFINE_integer(
     'max_training_steps',
-    int(3e5),
+    int(5e5),
     'Number of training steps (measured in network parameter update, one batch is one training step).',
 )
 
@@ -80,7 +80,7 @@ flags.DEFINE_bool('compress_data', False, 'Compress state when saving in replay 
 flags.DEFINE_integer('num_actors', 32, 'Number of self-play actor processes.')
 flags.DEFINE_integer(
     'num_simulations',
-    800,
+    64,
     'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.',
 )
 flags.DEFINE_integer(
