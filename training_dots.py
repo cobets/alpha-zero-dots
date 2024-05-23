@@ -30,9 +30,9 @@ from torch.optim.lr_scheduler import MultiStepLR
 FLAGS = flags.FLAGS
 flags.DEFINE_integer('board_size', 8, 'Board size for Dots game.')
 flags.DEFINE_integer('num_stack', 8, 'Stack N previous states, the state is an image of N x 2 + 1 binary planes.')
-flags.DEFINE_integer('num_res_blocks', 10, 'Number of residual blocks in the neural network.')
-flags.DEFINE_integer('num_filters', 80, 'Number of filters for the conv2d layers in the neural network.')
-flags.DEFINE_integer('num_fc_units', 120, 'Number of hidden units in the linear layer of the neural network.')
+flags.DEFINE_integer('num_res_blocks', 19, 'Number of residual blocks in the neural network.')
+flags.DEFINE_integer('num_filters', 256, 'Number of filters for the conv2d layers in the neural network.')
+flags.DEFINE_integer('num_fc_units', 256, 'Number of hidden units in the linear layer of the neural network.')
 
 flags.DEFINE_integer('min_games', 10000, 'Collect number of self-play games before learning starts.')
 flags.DEFINE_integer(
@@ -187,9 +187,6 @@ def main():
     maybe_create_dir(FLAGS.logs_dir)
     maybe_create_dir(FLAGS.save_sgf_dir)
 
-    l_tensorboard_dir = os.path.join(FLAGS.tensorboard_dir, time.strftime("%Y-%m-%d--%H-%M-%S"))
-    maybe_create_dir(l_tensorboard_dir)
-
     logger = create_logger(FLAGS.log_level)
 
     logger.info(extract_args_from_flags_dict(FLAGS.flag_values_dict()))
@@ -218,6 +215,13 @@ def main():
 
     input_shape = eval_env.env.observation().shape
     num_actions = eval_env.num_actions
+
+    l_input_shape_str = ".".join(map(str, input_shape))
+    l_tensorboard_dir = os.path.join(
+        FLAGS.tensorboard_dir,
+        f'i{l_input_shape_str}-f{FLAGS.num_filters}-rb{FLAGS.num_res_blocks}-fcu{FLAGS.num_fc_units}-g{True}-si{FLAGS.num_simulations}'
+    )
+    maybe_create_dir(l_tensorboard_dir)
 
     def network_builder():
         return AlphaZeroNet(

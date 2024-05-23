@@ -613,9 +613,10 @@ def run_learner_loop(  # noqa: C901
                         tensorboard_writer.add_scalar(f'Train/total_samples', stats['total_samples'], training_steps)
 
                 # Create checkpoint
+                l_input_shape_str = ".".join(map(str, network.input_shape))
                 ckpt_file = os.path.join(
                     ckpt_dir,
-                    f'i{".".join(map(str, network.input_shape))}-f{network.num_filters}-rb{network.num_res_block}-fcu{network.num_fc_units}-g{network.gomoku}-s{training_steps}.ckpt'
+                    f'i{l_input_shape_str}-f{network.num_filters}-rb{network.num_res_block}-fcu{network.num_fc_units}-g{network.gomoku}-si{num_simulations}-s{training_steps}.ckpt'
                 )
 
                 torch.save(
