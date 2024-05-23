@@ -42,7 +42,7 @@ flags.DEFINE_integer(
 )
 flags.DEFINE_integer(
     'replay_capacity',
-    250000 * 64,
+    500000 * 64,
     'Replay buffer capacity is number of game * average game length. '
     'Note for Gomoku, the game often ends around 9-15 steps.',
 )
